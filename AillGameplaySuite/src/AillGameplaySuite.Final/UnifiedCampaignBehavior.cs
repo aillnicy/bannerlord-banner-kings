@@ -125,7 +125,8 @@ namespace AillGameplaySuite
                        "Requested settlement payment: " + price + " denars.";
             InformationManager.ShowInquiry(new InquiryData(title, text, true, true, "Accept", "Decline",
                 () => TryRecruit(chosen.Clan, false),
-                () => _cooldowns[chosen.Clan.StringId] = CurrentDay + 180, true), true, false);
+                () => _cooldowns[chosen.Clan.StringId] = CurrentDay + 180,
+                string.Empty, 0f, null, null, null), true, false);
             _cooldowns[chosen.Clan.StringId] = now + 30;
         }
 
