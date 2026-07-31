@@ -47,7 +47,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Install ILRepack tool payload
         run: dotnet tool install --tool-path .tool dotnet-ilrepack --version 2.0.46
