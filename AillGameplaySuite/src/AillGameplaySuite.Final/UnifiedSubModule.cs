@@ -56,7 +56,7 @@ namespace AillGameplaySuite
             Diagnostics.GuardQuiet("xor.tick", () => LegacyBridge.Invoke(_modules, "XorberaxLegacy", "OnApplicationTick", dt));
         }
 
-        protected override void OnMissionBehaviorInitialize(Mission mission)
+        public override void OnMissionBehaviorInitialize(Mission mission)
         {
             base.OnMissionBehaviorInitialize(mission);
             Diagnostics.Guard("xor.mission", () => LegacyBridge.Invoke(_modules, "XorberaxLegacy", "OnMissionBehaviorInitialize", mission));
@@ -103,14 +103,8 @@ namespace AillGameplaySuite
     internal static class LegacyBridge
     {
         private const BindingFlags AllInstance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
         internal static Assembly Assembly => typeof(UnifiedSubModule).Assembly;
-
-        internal static object Create(string fullName)
-        {
-            var type = Assembly.GetType(fullName, true);
-            return Activator.CreateInstance(type, true);
-        }
+        internal static object Create(string fullName) => Activator.CreateInstance(Assembly.GetType(fullName, true), true);
 
         internal static void Invoke(IDictionary<string, object> modules, string key, string methodName, params object[] args)
         {
@@ -123,8 +117,7 @@ namespace AillGameplaySuite
 
         internal static void AddBehavior(CampaignGameStarter starter, string fullName)
         {
-            var type = Assembly.GetType(fullName, true);
-            var behavior = Activator.CreateInstance(type, true) as CampaignBehaviorBase;
+            var behavior = Activator.CreateInstance(Assembly.GetType(fullName, true), true) as CampaignBehaviorBase;
             if (behavior == null) throw new InvalidOperationException(fullName + " is not a CampaignBehaviorBase");
             starter.AddBehavior(behavior);
         }
@@ -134,8 +127,7 @@ namespace AillGameplaySuite
             var harmony = new Harmony(harmonyId);
             foreach (var type in GetTypesSafe().Where(t => t != null && t.Namespace != null && t.Namespace.StartsWith(namespacePrefix, StringComparison.Ordinal)))
             {
-                if (string.Equals(type.FullName, excludedType, StringComparison.Ordinal)) continue;
-                if (!HasHarmonyPatch(type)) continue;
+                if (string.Equals(type.FullName, excludedType, StringComparison.Ordinal) || !HasHarmonyPatch(type)) continue;
                 try { harmony.CreateClassProcessor(type).Patch(); }
                 catch (Exception ex) { Diagnostics.Report("Patch skipped: " + type.FullName, ex, false); }
             }
@@ -152,11 +144,8 @@ namespace AillGameplaySuite
             try
             {
                 var type = Assembly.GetType(typeName, false) ?? AccessTools.TypeByName(typeName);
-                if (type == null) return fallback;
-                var instanceProperty = type.GetProperty("Instance", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-                var instance = instanceProperty?.GetValue(null, null);
-                if (instance == null) return fallback;
-                var property = instance.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                var instance = type?.GetProperty("Instance", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)?.GetValue(null, null);
+                var property = instance?.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 return property?.GetValue(instance, null) ?? fallback;
             }
             catch { return fallback; }
@@ -168,8 +157,7 @@ namespace AillGameplaySuite
             if (type == null) return null;
             foreach (var nested in type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic))
             {
-                var method = nested.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
-                    .FirstOrDefault(m => m.Name == methodName);
+                var method = nested.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance).FirstOrDefault(m => m.Name == methodName);
                 if (method != null) return method;
             }
             return null;
@@ -190,8 +178,7 @@ namespace AillGameplaySuite
             try
             {
                 if (type.GetCustomAttributesData().Any(a => a.AttributeType.FullName == typeof(HarmonyPatch).FullName)) return true;
-                return type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
-                    .Any(m => m.GetCustomAttributesData().Any(a => a.AttributeType.FullName == typeof(HarmonyPatch).FullName));
+                return type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance).Any(m => m.GetCustomAttributesData().Any(a => a.AttributeType.FullName == typeof(HarmonyPatch).FullName));
             }
             catch { return false; }
         }
