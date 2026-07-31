@@ -1,0 +1,38 @@
+name: Aill Suite Build
+
+on:
+  push:
+    branches:
+      - chatgpt/aill-suite-build-20260731
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore AillGameplaySuite/src/AillGameplaySuite/AillGameplaySuite.csproj
+
+      - name: Build
+        run: dotnet build AillGameplaySuite/src/AillGameplaySuite/AillGameplaySuite.csproj -c Release --no-restore
+
+      - name: Assemble module
+        shell: pwsh
+        run: |
+          $root = "artifact/AillGameplaySuite"
+          New-Item -ItemType Directory -Force "$root/bin/Win64_Shipping_Client" | Out-Null
+          Copy-Item "AillGameplaySuite/module/SubModule.xml" "$root/SubModule.xml"
+          Copy-Item "AillGameplaySuite/src/AillGameplaySuite/bin/Release/net472/AillGameplaySuite.dll" "$root/bin/Win64_Shipping_Client/AillGameplaySuite.dll"
+          Copy-Item "AillGameplaySuite/README.md" "$root/README.md"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AillGameplaySuite-v0.1.0
+          path: artifact/AillGameplaySuite
+          if-no-files-found: error
