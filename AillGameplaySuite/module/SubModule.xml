@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Module>
+  <Name value="Aill Gameplay Suite" />
+  <Id value="AillGameplaySuite" />
+  <Version value="v0.1.0" />
+  <DefaultModule value="false" />
+  <ModuleCategory value="Singleplayer" />
+  <Official value="false" />
+  <DependedModules>
+    <DependedModule Id="Bannerlord.Harmony" DependentVersion="v2.4.2" />
+    <DependedModule Id="Native" DependentVersion="v1.4.7" />
+    <DependedModule Id="SandBoxCore" DependentVersion="v1.4.7" />
+    <DependedModule Id="Sandbox" DependentVersion="v1.4.7" />
+    <DependedModule Id="StoryMode" DependentVersion="v1.4.7" Optional="true" />
+    <DependedModule Id="CustomBattle" DependentVersion="v1.4.7" Optional="true" />
+    <DependedModule Id="BirthAndDeath" DependentVersion="v1.4.7" Optional="true" />
+  </DependedModules>
+  <SubModules>
+    <SubModule>
+      <Name value="Aill Gameplay Suite" />
+      <DLLName value="AillGameplaySuite.dll" />
+      <SubModuleClassType value="AillGameplaySuite.SubModule" />
+      <Tags>
+        <Tag key="DedicatedServerType" value="none" />
+        <Tag key="IsNoRenderModeElement" value="false" />
+      </Tags>
+    </SubModule>
+  </SubModules>
+  <Xmls />
+</Module>
