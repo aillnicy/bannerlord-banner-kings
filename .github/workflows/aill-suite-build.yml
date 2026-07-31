@@ -14,17 +14,13 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-
       - name: Restore
         run: dotnet restore AillGameplaySuite/src/AillGameplaySuite/AillGameplaySuite.csproj
-
       - name: Build
         run: dotnet build AillGameplaySuite/src/AillGameplaySuite/AillGameplaySuite.csproj -c Release --no-restore
-
       - name: Assemble module
         shell: pwsh
         run: |
@@ -33,28 +29,40 @@ jobs:
           Copy-Item "AillGameplaySuite/module/SubModule.xml" "$root/SubModule.xml"
           Copy-Item "AillGameplaySuite/src/AillGameplaySuite/bin/Release/net472/AillGameplaySuite.dll" "$root/bin/Win64_Shipping_Client/AillGameplaySuite.dll"
           Copy-Item "AillGameplaySuite/README.md" "$root/README.md"
-
       - uses: actions/upload-artifact@v4
         with:
           name: AillGameplaySuite-v0.1.0
           path: artifact/AillGameplaySuite
           if-no-files-found: error
 
+  final-bootstrap:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore final bootstrap
+        run: dotnet restore AillGameplaySuite/src/AillGameplaySuite.Final/AillGameplaySuite.Final.csproj
+      - name: Build final bootstrap
+        run: dotnet build AillGameplaySuite/src/AillGameplaySuite.Final/AillGameplaySuite.Final.csproj -c Release --no-restore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AillGameplaySuite-final-bootstrap
+          path: AillGameplaySuite/src/AillGameplaySuite.Final/bin/Release/net472/AillGameplaySuite.dll
+          if-no-files-found: error
+
   repack-tool:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-
       - name: Install ILRepack tool payload
         run: dotnet tool install --tool-path .tool dotnet-ilrepack --version 2.0.46
-
       - name: Publish self-contained host
         run: dotnet publish tools/RepackHost/RepackHost.csproj -c Release -r linux-x64 --self-contained true -o artifact/repackhost
-
       - name: Copy ILRepack managed payload
         shell: bash
         run: |
@@ -62,7 +70,6 @@ jobs:
           find .tool -type f -name '*.dll' -print0 | while IFS= read -r -d '' f; do cp -n "$f" artifact/repackhost/toolpayload/; done
           chmod +x artifact/repackhost/RepackHost
           find artifact/repackhost -maxdepth 2 -type f -printf '%P %s\n' | sort
-
       - uses: actions/upload-artifact@v4
         with:
           name: AillRepackHost-linux-x64
